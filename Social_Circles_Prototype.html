@@ -1,25 +1,212 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CircleSafe — Interactive Prototype</title><style>
-:root{font-family:Inter,system-ui,Arial;background:#e8edf3;color:#15243c}*{box-sizing:border-box}body{margin:0}.shell{max-width:440px;min-height:100vh;margin:auto;background:#f8fafc;box-shadow:0 0 30px #8da0b54d;padding-bottom:84px}header{background:#142f47;color:white;padding:22px 20px 16px;position:sticky;top:0;z-index:2}header h1{font-size:23px;margin:0}header small{color:#a8d6d4}main{padding:18px}h2{font-size:20px;margin:4px 0 12px}h3{font-size:16px;margin:10px 0}p{line-height:1.45}.muted{color:#617084;font-size:13px}.card{background:white;border:1px solid #dce5ed;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 10px #22334409}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.pill{background:#e1f4ef;color:#176c62;border-radius:30px;padding:5px 9px;font-size:12px;font-weight:700}.btn{background:#147d78;color:white;border:0;border-radius:10px;padding:12px 15px;font-weight:700;cursor:pointer}.btn.secondary{background:#e7edf3;color:#20374a}.btn.danger{background:#ffe5e5;color:#9b2929}.btn:disabled{opacity:.4}.audience-control{width:100%;text-align:left;min-height:48px}.section-help{margin:0 0 16px}.notice:focus{outline:2px solid #147d78;outline-offset:3px}button{cursor:pointer}input,textarea,select{width:100%;padding:12px;border:1px solid #b9c8d4;border-radius:10px;font:inherit;margin:7px 0 12px;background:white}label{font-size:14px;font-weight:650}.check{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #edf1f5}.check input{width:20px;height:20px;margin:0}.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(440px,100%);display:flex;background:#fff;border-top:1px solid #dce5ed;z-index:3}.nav button{flex:1;background:white;border:0;padding:13px 4px;color:#58697a;font-size:12px}.nav button.active{color:#0a7971;font-weight:800}.notice{background:#e6f5f2;border-left:4px solid #14827c;padding:12px;border-radius:9px;margin-bottom:12px}.notice strong{display:block;margin-bottom:3px}.warning{background:#fff0d6;border-left:4px solid #c48b1b;padding:12px;border-radius:9px;margin:12px 0}.tag{display:inline-block;background:#edf2f7;padding:5px 9px;margin:3px;border-radius:8px;font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions .btn{flex:1}.avatar{background:#d9e9f0;border-radius:50%;width:38px;height:38px;display:grid;place-items:center;font-weight:700}.person{display:flex;align-items:center;gap:10px}.divider{height:1px;background:#e5ebf0;margin:12px 0}.topline{display:flex;justify-content:space-between;align-items:center}.hidden{display:none}</style><div class="shell"><header><div class="topline"><div><small>TEAM 13 · INTERACTIVE DEMO</small><h1>◉ CircleSafe</h1></div><span style="font-size:25px">🔒</span></div></header><main id="app"></main><nav class="nav" id="nav"></nav></div><script>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CircleSafe — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ecebe6;--canvas:#faf9f7;--surface:#fff;--ink:#1d1e20;--muted:#5d5f64;
+  --line:#e5e2dc;--field:#d4d0c8;--accent:#2e5b4f;--accent-hover:#244a40;--accent-soft:#e7efeb;
+  --neutral-soft:#f1efeb;--warn-soft:#f7f0e1;--warn-ink:#654b12;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45;color:var(--ink);-webkit-font-smoothing:antialiased}
+b,strong{font-weight:600}
+button{cursor:pointer;font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.shell{max-width:440px;min-height:100vh;margin:auto;background:var(--canvas);border-inline:1px solid var(--line);padding-bottom:92px}
+header{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:14px 20px;background:rgba(250,249,247,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em}
+main{padding:20px}
+
+h2{margin:0 0 6px;font-size:22px;font-weight:600;letter-spacing:-.015em}
+h3{margin:20px 0 8px;font-size:15px;font-weight:600}
+p{margin:0 0 10px}
+.muted{color:var(--muted);font-size:14px}
+.section-help{margin:0 0 18px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.divider{height:1px;background:var(--line);margin:16px 0}
+.ic{flex:none;display:block}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card > h3:first-child{margin-top:0}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:16px}
+.list-item{padding:16px}
+.list-item + .list-item{border-top:1px solid var(--line)}
+.list-item h3{margin:0}
+.list-item .muted{margin:4px 0 0}
+.list-item .btn{margin-top:12px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border:1px solid transparent;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;font-size:15px;transition:background .15s}
+.btn:hover{background:var(--accent-hover)}
+.btn.secondary{background:var(--surface);color:var(--ink);border-color:var(--field)}
+.btn.secondary:hover{background:var(--neutral-soft)}
+.btn:disabled{opacity:.4}
+.btn.block{width:100%}
+.audience-control{width:100%;justify-content:space-between;text-align:left;padding:10px 12px 10px 14px;margin-top:12px}
+.audience-control .sub{display:block;font-size:13px;font-weight:400;color:var(--muted)}
+.audience-control .ic{color:var(--muted)}
+
+.back{display:inline-flex;align-items:center;gap:2px;min-height:44px;margin:-10px 0 2px -6px;padding:0 8px 0 0;background:none;border:0;color:var(--muted);font-size:14px}
+.back:hover{color:var(--ink)}
+
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;text-align:right;max-width:60%}
+.badge.neutral{background:var(--neutral-soft);color:var(--muted)}
+.tag{display:inline-block;margin:0 6px 6px 0;padding:4px 9px;border-radius:6px;background:var(--neutral-soft);font-size:13px}
+
+.notice,.note,.summary{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;font-size:14px}
+.notice{margin-bottom:16px;background:var(--accent-soft);color:#1f3f37}
+.notice .ic{color:var(--accent);margin-top:1px}
+.notice:focus{outline:none}
+.notice:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{margin:16px 0;background:var(--warn-soft);color:var(--warn-ink)}
+.note .ic{margin-top:1px}
+.summary{margin:14px 0 16px;background:var(--neutral-soft)}
+.summary .ic{color:var(--muted);margin-top:1px}
+
+label{font-size:14px;font-weight:600}
+input[type=text],textarea{width:100%;margin:6px 0 4px;padding:11px 12px;border:1px solid var(--field);border-radius:10px;background:#fff;font:inherit;color:inherit;resize:vertical}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.checks{border-top:1px solid var(--line)}
+.check{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:400}
+.check input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--accent)}
+.check.disabled{color:var(--muted)}
+.setting .check{border-bottom:0}
+.setting .muted{margin:0 0 6px 32px}
+.setting + .setting{border-top:1px solid var(--line);margin-top:8px;padding-top:4px}
+
+.person{display:flex;align-items:center;gap:10px;min-width:0}
+.avatar{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:#e9e5dd;color:#45464a;font-size:12px;font-weight:600}
+.people .person{min-height:48px;border-bottom:1px solid var(--line)}
+.people{border-top:1px solid var(--line);margin-bottom:12px}
+.post-text{margin:12px 0 4px;font-size:16px}
+
+.done{text-align:center;padding:28px 16px}
+.done-mark{display:grid;place-items:center;width:52px;height:52px;margin:0 auto 14px;border-radius:50%;background:var(--accent-soft);color:var(--accent)}
+
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:3;display:flex;width:min(440px,100%);padding-bottom:env(safe-area-inset-bottom);background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;background:none;border:0;color:var(--muted);font-size:12px}
+.nav button.active{color:var(--accent);font-weight:600}
+.actions{display:flex;gap:10px;margin-top:16px}
+.actions .btn{flex:1;padding:0 12px;white-space:nowrap}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="10" cy="13" r="7" fill="none" stroke="#2e5b4f" stroke-width="2"/><circle cx="16" cy="13" r="7" fill="#2e5b4f" fill-opacity=".16" stroke="#2e5b4f" stroke-width="2"/></svg>
+    <h1>CircleSafe</h1>
+  </header>
+  <main id="app"></main>
+  <nav class="nav" id="nav" aria-label="Main"></nav>
+</div>
+<script>
 const people=['Alex Chen','Maya Patel','Jordan Lee','Taylor Kim','Sam Rivera','Morgan Reed','Casey Brown','Riley Shah'];
 let circles=[{id:1,name:'Close Friends',members:[0,1,2],visible:true,discover:false},{id:2,name:'Family',members:[3,4],visible:true,discover:false},{id:3,name:'School',members:[2,5,6],visible:true,discover:true},{id:4,name:'Work',members:[6,7],visible:false,discover:false}];
 let posts=[{id:1,text:'Weekend plans with friends ☀️',audience:[1],date:'Today'},{id:2,text:'School project update 📚',audience:[3],date:'Yesterday'}];
 let page='feed',editing=null,form=null,composer={text:'',audience:[]},selectedPost=null,notice='';
-const app=document.getElementById('app'),nav=document.getElementById('nav');const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const get=id=>circles.find(c=>c.id===id);const names=ids=>ids.map(id=>get(id)?.name).filter(Boolean).join(', ')||'Nobody';const count=ids=>new Set(ids.flatMap(id=>get(id)?.members||[])).size;
-function go(p){page=p;notice='';render()}function flash(t,p){notice=t;page=p;render()}function setField(k,v){form[k]=v}function toggleMember(i){form.members=form.members.includes(i)?form.members.filter(x=>x!==i):[...form.members,i];render()}function toggleAudience(id){composer.audience=composer.audience.includes(id)?composer.audience.filter(x=>x!==id):[...composer.audience,id];render()}
+const app=document.getElementById('app'),nav=document.getElementById('nav');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const get=id=>circles.find(c=>c.id===id);
+const names=ids=>ids.map(id=>get(id)?.name).filter(Boolean).join(', ')||'Nobody';
+const count=ids=>new Set(ids.flatMap(id=>get(id)?.members||[])).size;
+const plural=n=>n+' '+(n===1?'member':'members');
+const membersOf=ids=>[...new Set(ids.flatMap(id=>get(id)?.members||[]))];
+
+const ICONS={
+  feed:'<path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/>',
+  circles:'<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>',
+  compose:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
+  privacy:'<path d="M12 3.5 5 6.5v5c0 4.3 2.9 7.9 7 9 4.1-1.1 7-4.7 7-9v-5z"/><path d="m9.2 12 2 2 3.8-3.8"/>',
+  back:'<path d="M14.5 6 8.5 12l6 6"/>',
+  chevron:'<path d="m9.5 6 6 6-6 6"/>',
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  plus:'<path d="M12 5.5v13M5.5 12h13"/>',
+  users:'<circle cx="9" cy="8.5" r="3.5"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3.5 3.5 0 0 1 0 6.6M18 14.3c1.9.7 3 2.6 3 5.2"/>',
+  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>'
+};
+const icon=(n,size=20)=>`<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+const initials=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2);
+const avatar=n=>`<span class="avatar" aria-hidden="true">${esc(initials(n))}</span>`;
+const personList=ids=>ids.length?`<div class="people">${ids.map(i=>`<div class="person">${avatar(people[i])}${esc(people[i])}</div>`).join('')}</div>`:'';
+const back=(action,label)=>`<button class="back" onclick="${action}">${icon('back',18)}${label}</button>`;
+
+function go(p){page=p;notice='';render()}
+function flash(t,p){notice=t;page=p;render()}
+function setField(k,v){form[k]=v}
+function toggleMember(i){form.members=form.members.includes(i)?form.members.filter(x=>x!==i):[...form.members,i];render()}
+function toggleAudience(id){composer.audience=composer.audience.includes(id)?composer.audience.filter(x=>x!==id):[...composer.audience,id];render()}
 function edit(id){editing=id;let c=get(id);form=c?{...c,members:[...c.members]}:{id:Date.now(),name:'',members:[],visible:true,discover:false};go('editor')}
-function saveCircle(){let name=document.getElementById('circleName').value.trim();if(!name){alert('Please enter a circle name');return}form.name=name;let index=circles.findIndex(c=>c.id===form.id);if(index<0)circles.push({...form});else circles[index]={...form};flash('Circle “'+name+'” '+(index<0?'created':'updated')+' successfully. '+form.members.length+' '+(form.members.length===1?'member':'members')+' saved.','circles')}
+function saveCircle(){let name=document.getElementById('circleName').value.trim();if(!name){alert('Please enter a circle name');return}form.name=name;let index=circles.findIndex(c=>c.id===form.id);if(index<0)circles.push({...form});else circles[index]={...form};flash('Circle “'+name+'” '+(index<0?'created':'updated')+'. '+form.members.length+' '+(form.members.length===1?'member':'members')+' saved.','circles')}
 function saveSettings(){let c=get(editing);c.visible=document.getElementById('visible').checked;c.discover=document.getElementById('discover').checked;flash('Privacy settings saved for '+c.name+'. Sharing is '+(c.visible?'enabled':'paused')+' and account discovery is '+(c.discover?'on':'off')+'.','circles')}
 function showPost(id){selectedPost=id;go('post')}
-function render(){const activePage=({post:'feed',editor:'circles',settings:'privacy',preview:'compose',published:'compose'})[page]||page;nav.innerHTML=[['feed','⌂','Feed'],['circles','◎','Circles'],['compose','＋','Post'],['privacy','⚙','Privacy']].map(([p,ic,n])=>`<button class="${activePage===p?'active':''}" onclick="${p==='compose'?'startCompose()':`go('${p}')`}">${ic}<br>${n}</button>`).join('');let s=notice?`<div class="notice" role="status" aria-live="polite" tabindex="-1">${esc(notice)}</div>`:'';
-if(page==='feed'){s+=`<h2>Home feed</h2><p class="muted">Explore sample posts and check who can see them.</p>`+posts.slice().reverse().map(p=>`<div class="card"><div class="row"><b>My profile</b><span class="pill" aria-label="Post audience: ${esc(names(p.audience))}">Audience: ${esc(names(p.audience))}</span></div><p>${esc(p.text)}</p><p class="muted">${p.date}</p><button class="btn audience-control" aria-label="View audience details for ${esc(p.text)}" onclick="showPost(${p.id})">View audience details →<br><span style="font-weight:400">Who can see this post? ${esc(names(p.audience))}</span></button></div>`).join('')+`<button class="btn" onclick="startCompose()">Create a post</button>`}
-if(page==='post'){let p=posts.find(x=>x.id===selectedPost);s+=`<button class="btn secondary" onclick="go('feed')">← Back to feed</button><h2>Post audience</h2><div class="card"><p>${esc(p.text)}</p><h3>Visible to</h3>${p.audience.map(id=>`<span class="tag">${esc(get(id)?.name||'Deleted circle')}</span>`).join('')}<p><b>${count(p.audience)} unique sample people</b> may see this post.</p><div class="divider"></div><h3>People included</h3>${[...new Set(p.audience.flatMap(id=>get(id)?.members||[]))].map(i=>`<div class="check">${esc(people[i])}</div>`).join('')||'No members'}</div>`}
-if(page==='circles'){s+=`<div class="row"><h2>My circles</h2><button class="btn" onclick="edit(null)">+ New circle</button></div><p class="muted">Manage circle names and members here. To change sharing or account discovery, open Privacy in the bottom navigation.</p>`+circles.map(c=>`<div class="card"><div class="row"><h3>${esc(c.name)}</h3><span class="pill">${c.members.length} members</span></div><p class="muted">${c.members.map(i=>people[i]).join(', ')||'No members yet'}</p><p class="muted">Account discoverability: ${c.discover?'On':'Off'} · Sharing: ${c.visible?'Allowed':'Paused'}</p><div class="actions"><button class="btn secondary" onclick="edit(${c.id})">Edit name &amp; members</button></div></div>`).join('')}
-if(page==='editor'){s+=`<button class="btn secondary" onclick="go('circles')">← Circles</button><h2>${editing?'Edit circle':'Create circle'}</h2><div class="card"><label for="circleName">Circle name</label><input id="circleName" maxlength="35" oninput="setField('name',this.value)" value="${esc(form.name)}" placeholder="e.g. Sports Team"><h3>Select members</h3><p class="muted">Select people who should belong to this circle.</p>${people.map((p,i)=>`<label class="check"><input type="checkbox" ${form.members.includes(i)?'checked':''} onchange="toggleMember(${i})">${esc(p)}</label>`).join('')}<div class="actions"><button class="btn" onclick="saveCircle()">Save circle</button><button class="btn secondary" onclick="go('circles')">Cancel</button></div></div>`}
-if(page==='privacy'){s+=`<h2>Circle privacy settings</h2><p class="muted">Manage sharing and account discovery here. To change a circle’s name or members, open Circles in the bottom navigation. These privacy settings are simulated.</p>`+circles.map(c=>`<div class="card"><div class="row"><b>${esc(c.name)}</b><span class="pill">${c.discover?'Discoverable':'Hidden'}</span></div><p class="muted">${c.visible?'Posting enabled':'Posting paused'} · ${c.members.length} members</p><button class="btn secondary" onclick="settings(${c.id})">Edit privacy settings</button></div>`).join('')}
-if(page==='settings'){let c=get(editing);s+=`<button class="btn secondary" onclick="go('privacy')">← Privacy</button><h2>${esc(c.name)} preferences</h2><div class="card"><label class="check"><input type="checkbox" id="visible" ${c.visible?'checked':''}> Allow sharing posts with this circle</label><p class="muted">When disabled, this circle cannot be selected for new posts.</p><label class="check"><input type="checkbox" id="discover" ${c.discover?'checked':''}> Allow account discovery through this circle</label><p class="muted">When on, people connected through this circle may receive a suggestion to view your profile. When off, this circle will not be used for profile suggestions.</p><div class="warning">Changes here do not alter privacy settings in any real social media app.</div><button class="btn" onclick="saveSettings()">Save preferences</button></div>`}
-if(page==='compose'){s+=`<h2>Create a post</h2><div class="card"><label for="postText">Your post</label><textarea id="postText" rows="4" placeholder="What would you like to share?" oninput="composer.text=this.value">${esc(composer.text)}</textarea><h3>Choose audience circles</h3>${circles.map(c=>`<label class="check" style="opacity:${c.visible?1:.5}"><input type="checkbox" ${composer.audience.includes(c.id)?'checked':''} ${!c.visible?'disabled':''} onchange="toggleAudience(${c.id})">${esc(c.name)} ${!c.visible?'(sharing paused)':''}</label>`).join('')}<div class="notice">Selected audience: ${esc(names(composer.audience))}<br>${count(composer.audience)} unique sample people</div><button class="btn" onclick="preview()">Preview audience →</button></div>`}
-if(page==='preview'){s+=`<h2>Review before sharing</h2><div class="card"><h3>Your post</h3><p>${esc(composer.text)}</p><div class="divider"></div><h3>Who can see this?</h3>${composer.audience.map(id=>`<span class="tag">${esc(get(id)?.name)}</span>`).join('')}<p><b>${count(composer.audience)} unique people</b> in your selected circles.</p><h3>Audience members</h3>${[...new Set(composer.audience.flatMap(id=>get(id)?.members||[]))].map(i=>`<div class="check">${esc(people[i])}</div>`).join('')||'None'}<div class="warning">Check this list carefully before publishing. People may belong to multiple circles.</div><div class="actions"><button class="btn secondary" onclick="go('compose')">Edit audience</button><button class="btn" onclick="publish()">Confirm & publish</button></div></div>`}
-if(page==='published'){s+=`<div class="card"><h2>✓ Post shared</h2><p>Your simulated post was added to the feed with your selected audience.</p><div class="actions"><button class="btn" onclick="go('feed')">View post in feed</button><button class="btn secondary" onclick="startCompose()">New post</button></div></div>`}
-app.innerHTML=s;if(notice){app.querySelector('[role=status]')?.focus();window.scrollTo({top:0,behavior:'smooth'});}}
-function settings(id){editing=id;go('settings')}function startCompose(){composer={text:'',audience:[]};go('compose')}function preview(){composer.text=document.getElementById('postText').value.trim();if(!composer.text){alert('Write a post before continuing');return}if(!composer.audience.length){alert('Choose at least one audience circle');return}go('preview')}function publish(){posts.push({id:Date.now(),text:composer.text,audience:[...composer.audience],date:'Just now'});go('published')}render();
-</script></html>
+
+function render(){
+  const activePage=({post:'feed',editor:'circles',settings:'privacy',preview:'compose',published:'compose'})[page]||page;
+  nav.innerHTML=[['feed','Feed'],['circles','Circles'],['compose','Post'],['privacy','Privacy']].map(([p,n])=>`<button class="${activePage===p?'active':''}" ${activePage===p?'aria-current="page"':''} onclick="${p==='compose'?'startCompose()':`go('${p}')`}">${icon(p,22)}${n}</button>`).join('');
+  let s=notice?`<div class="notice" role="status" aria-live="polite" tabindex="-1">${icon('check',18)}<span>${esc(notice)}</span></div>`:'';
+
+  if(page==='feed'){
+    s+=`<h2>Home feed</h2><p class="muted section-help">Explore sample posts and check who can see them.</p>`+posts.slice().reverse().map(p=>`<article class="card">
+      <div class="row"><div class="person">${'<span class="avatar" aria-hidden="true">Me</span>'}<b>My profile</b></div><span class="badge" aria-label="Post audience: ${esc(names(p.audience))}">Audience: ${esc(names(p.audience))}</span></div>
+      <p class="post-text">${esc(p.text)}</p><p class="muted">${p.date}</p>
+      <button class="btn secondary audience-control" aria-label="View audience details for ${esc(p.text)}" onclick="showPost(${p.id})"><span>View audience details<span class="sub">Who can see this post? ${esc(names(p.audience))}</span></span>${icon('chevron',18)}</button>
+    </article>`).join('')+`<button class="btn block" onclick="startCompose()">Create a post</button>`;
+  }
+  if(page==='post'){
+    let p=posts.find(x=>x.id===selectedPost);
+    s+=`${back("go('feed')",'Back to feed')}<h2>Post audience</h2><div class="card"><p class="post-text" style="margin-top:0">${esc(p.text)}</p><h3>Visible to</h3>${p.audience.map(id=>`<span class="tag">${esc(get(id)?.name||'Deleted circle')}</span>`).join('')}<p><b>${count(p.audience)} unique sample people</b> may see this post.</p><div class="divider"></div><h3>People included</h3>${personList(membersOf(p.audience))||'<p class="muted">No members</p>'}</div>`;
+  }
+  if(page==='circles'){
+    s+=`<div class="row"><h2>My circles</h2><button class="btn" onclick="edit(null)">${icon('plus',18)}New circle</button></div><p class="muted section-help">Manage circle names and members here. To change sharing or account discovery, open Privacy in the bottom navigation.</p><div class="list">`+circles.map(c=>`<div class="list-item">
+      <div class="row"><h3>${esc(c.name)}</h3><span class="muted" style="margin:0">${plural(c.members.length)}</span></div>
+      <p class="muted">${c.members.map(i=>esc(people[i])).join(', ')||'No members yet'}</p>
+      <p class="muted">Account discoverability: ${c.discover?'On':'Off'} · Sharing: ${c.visible?'Allowed':'Paused'}</p>
+      <button class="btn secondary block" onclick="edit(${c.id})">Edit name &amp; members</button>
+    </div>`).join('')+`</div>`;
+  }
+  if(page==='editor'){
+    s+=`${back("go('circles')",'Circles')}<h2>${editing?'Edit circle':'Create circle'}</h2><div class="card"><label for="circleName">Circle name</label><input type="text" id="circleName" maxlength="35" oninput="setField('name',this.value)" value="${esc(form.name)}" placeholder="e.g. Sports Team"><h3>Select members</h3><p class="muted">Select people who should belong to this circle.</p><div class="checks">${people.map((p,i)=>`<label class="check"><input type="checkbox" ${form.members.includes(i)?'checked':''} onchange="toggleMember(${i})">${avatar(p)}${esc(p)}</label>`).join('')}</div><div class="actions"><button class="btn" onclick="saveCircle()">Save circle</button><button class="btn secondary" onclick="go('circles')">Cancel</button></div></div>`;
+  }
+  if(page==='privacy'){
+    s+=`<h2>Circle privacy settings</h2><p class="muted section-help">Manage sharing and account discovery here. To change a circle’s name or members, open Circles in the bottom navigation. These privacy settings are simulated.</p><div class="list">`+circles.map(c=>`<div class="list-item">
+      <div class="row"><h3>${esc(c.name)}</h3><span class="badge ${c.discover?'':'neutral'}">${c.discover?'Discoverable':'Hidden'}</span></div>
+      <p class="muted">${c.visible?'Posting enabled':'Posting paused'} · ${plural(c.members.length)}</p>
+      <button class="btn secondary block" onclick="settings(${c.id})">Edit privacy settings</button>
+    </div>`).join('')+`</div>`;
+  }
+  if(page==='settings'){
+    let c=get(editing);
+    s+=`${back("go('privacy')",'Privacy')}<h2>${esc(c.name)} preferences</h2><div class="card">
+      <div class="setting"><label class="check"><input type="checkbox" id="visible" ${c.visible?'checked':''}> Allow sharing posts with this circle</label><p class="muted">When disabled, this circle cannot be selected for new posts.</p></div>
+      <div class="setting"><label class="check"><input type="checkbox" id="discover" ${c.discover?'checked':''}> Allow account discovery through this circle</label><p class="muted">When on, people connected through this circle may receive a suggestion to view your profile. When off, this circle will not be used for profile suggestions.</p></div>
+      <div class="note">${icon('info',18)}<span>Changes here do not alter privacy settings in any real social media app.</span></div>
+      <button class="btn block" onclick="saveSettings()">Save preferences</button></div>`;
+  }
+  if(page==='compose'){
+    s+=`<h2>Create a post</h2><div class="card"><label for="postText">Your post</label><textarea id="postText" rows="4" placeholder="What would you like to share?" oninput="composer.text=this.value">${esc(composer.text)}</textarea><h3>Choose audience circles</h3><div class="checks">${circles.map(c=>`<label class="check ${c.visible?'':'disabled'}"><input type="checkbox" ${composer.audience.includes(c.id)?'checked':''} ${!c.visible?'disabled':''} onchange="toggleAudience(${c.id})">${esc(c.name)} ${!c.visible?'(sharing paused)':''}</label>`).join('')}</div><div class="summary">${icon('users',18)}<span>Selected audience: ${esc(names(composer.audience))}<br>${count(composer.audience)} unique sample people</span></div><button class="btn block" onclick="preview()">Preview audience</button></div>`;
+  }
+  if(page==='preview'){
+    s+=`<h2>Review before sharing</h2><div class="card"><h3>Your post</h3><p class="post-text" style="margin-top:0">${esc(composer.text)}</p><div class="divider"></div><h3>Who can see this?</h3>${composer.audience.map(id=>`<span class="tag">${esc(get(id)?.name)}</span>`).join('')}<p><b>${count(composer.audience)} unique people</b> in your selected circles.</p><h3>Audience members</h3>${personList(membersOf(composer.audience))||'<p class="muted">None</p>'}<div class="note">${icon('info',18)}<span>Check this list carefully before publishing. People may belong to multiple circles.</span></div><div class="actions"><button class="btn secondary" onclick="go('compose')">Edit audience</button><button class="btn" onclick="publish()">Confirm &amp; publish</button></div></div>`;
+  }
+  if(page==='published'){
+    s+=`<div class="card done"><div class="done-mark">${icon('check',26)}</div><h2>Post shared</h2><p class="muted">Your simulated post was added to the feed with your selected audience.</p><div class="actions"><button class="btn" onclick="go('feed')">View post in feed</button><button class="btn secondary" onclick="startCompose()">New post</button></div></div>`;
+  }
+  app.innerHTML=s;
+  if(notice){app.querySelector('[role=status]')?.focus();window.scrollTo({top:0,behavior:'smooth'});}
+}
+function settings(id){editing=id;go('settings')}
+function startCompose(){composer={text:'',audience:[]};go('compose')}
+function preview(){composer.text=document.getElementById('postText').value.trim();if(!composer.text){alert('Write a post before continuing');return}if(!composer.audience.length){alert('Choose at least one audience circle');return}go('preview')}
+function publish(){posts.push({id:Date.now(),text:composer.text,audience:[...composer.audience],date:'Just now'});go('published')}
+render();
+</script>
+</body>
+</html>
