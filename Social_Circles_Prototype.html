@@ -38,6 +38,7 @@ p{margin:0 0 10px;text-wrap:pretty}
 .lede{color:var(--muted);margin:0 0 20px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .ic{flex:none;display:block}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .card{background:var(--surface);border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(34,37,58,.05),0 6px 20px -8px rgba(34,37,58,.10)}
 .card > h3:first-child{margin-top:0}
@@ -161,8 +162,8 @@ input[aria-invalid=true],textarea[aria-invalid=true]{box-shadow:inset 0 0 0 2px 
 const people=['Alex Chen','Maya Patel','Jordan Lee','Taylor Kim','Sam Rivera','Morgan Reed','Casey Brown','Riley Shah'];
 const PALETTE=[{c:'#b02c62',s:'#fce8f0'},{c:'#985b00',s:'#fdf0d8'},{c:'#2a64c9',s:'#e4edfc'},{c:'#1e7350',s:'#e0f2e9'},{c:'#6c45bd',s:'#eee8fb'},{c:'#0c6f80',s:'#dcf1f4'}];
 const AVATAR=[{c:'#8f2a55',s:'#fbe4ee'},{c:'#7a4a00',s:'#fbecd2'},{c:'#1f4f9e',s:'#e1eafb'},{c:'#195e42',s:'#dcf0e6'},{c:'#55359a',s:'#ebe4fa'},{c:'#0a5a68',s:'#d8eff3'},{c:'#7d3f12',s:'#f8e6d8'},{c:'#3c4a63',s:'#e6eaf2'}];
-let circles=[{id:1,name:'Close Friends',members:[0,1,2],visible:true,discover:false,hue:0},{id:2,name:'Family',members:[3,4],visible:true,discover:false,hue:1},{id:3,name:'School',members:[2,5,6],visible:true,discover:true,hue:2},{id:4,name:'Work',members:[6,7],visible:false,discover:false,hue:3}];
-let posts=[{id:1,text:'Weekend plans with friends ☀️',audience:[1],date:'Today'},{id:2,text:'School project update 📚',audience:[3],date:'Yesterday'}];
+let circles=[{id:1,name:'Close Friends',members:[0,1,2],visible:true,discover:false,hue:0},{id:2,name:'Family',members:[3,4],visible:true,discover:false,hue:1},{id:3,name:'School',members:[2,5,6],visible:true,discover:true,hue:2},{id:4,name:'Work',members:[6,7],visible:false,discover:false,hue:4}];
+let posts=[{id:1,text:'Weekend plans with friends ☀️',audience:[1],date:'Yesterday'},{id:2,text:'School project update 📚',audience:[3],date:'Today'}];
 let page='feed',editing=null,form=null,composer={text:'',audience:[]},selectedPost=null,notice='',errors={},lastPost=null,focusHeading=false;
 const app=document.getElementById('app'),nav=document.getElementById('nav');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -208,7 +209,7 @@ function audienceView(ids,verb){
   const overlaps=ms.filter(i=>inCircles(i).length>1);
   let s=`<div class="aud"><div class="aud-head">${venn(ids)}<p class="aud-count"><b>${n}</b>${peopleWord(n)} ${verb}</p></div><div class="chips">${chosen.map(chip).join('')}</div>`;
   if(overlaps.length)s+=`<div class="overlap-note">${icon('both',18)}<span>${overlaps.map(i=>esc(people[i])).join(' and ')} ${overlaps.length===1?'is':'are'} in more than one of these circles. Each person only sees the post once.</span></div>`;
-  s+=ms.length?`<div class="people">${ms.map(i=>{const cs=inCircles(i);return `<div class="p ${cs.length>1?'both':''}">${avatar(i)}<span class="grow">${esc(people[i])}<span class="in">${cs.map(c=>esc(c.name)).join(' + ')}</span></span><span class="rings">${cs.map(c=>ring(c,14)).join('')}</span></div>`}).join('')}</div>`:`<p class="muted">No one yet. Add members to these circles first.</p>`;
+  s+=ms.length?`<div class="people">${ms.map(i=>{const cs=inCircles(i);return `<div class="p ${cs.length>1?'both':''}">${avatar(i)}<span class="grow">${esc(people[i])}${chosen.length>1?`<span class="in">${cs.map(c=>esc(c.name)).join(' + ')}</span>`:''}</span><span class="rings">${cs.map(c=>ring(c,14)).join('')}</span></div>`}).join('')}</div>`:`<p class="muted">No one yet. Add members to these circles first.</p>`;
   return s+`</div>`;
 }
 
@@ -226,19 +227,22 @@ function showPost(id){selectedPost=id;go('post')}
 function settings(id){editing=id;go('settings')}
 function startCompose(){composer={text:'',audience:[]};go('compose')}
 function openCompose(){if(page==='published')composer={text:'',audience:[]};go('compose')}
-function preview(){composer.text=document.getElementById('postText').value.trim();errors={};if(!composer.text)errors.text='Write something to share';if(!composer.audience.length)errors.audience='Choose at least one circle';else if(!count(composer.audience))errors.audience='These circles have no members yet';if(Object.keys(errors).length){render();document.getElementById(errors.text?'postText':'audience-first')?.focus();return}go('preview')}
+function eligible(id){const c=get(id);return c&&c.visible&&c.members.length}
+function pruneAudience(){const dropped=composer.audience.filter(id=>!eligible(id));composer.audience=composer.audience.filter(eligible);return dropped}
+let droppedNote=[];
+function preview(){droppedNote=pruneAudience();composer.text=document.getElementById('postText').value.trim();errors={};if(!composer.text)errors.text='Write something to share';if(!composer.audience.length)errors.audience='Choose at least one circle';else if(!count(composer.audience))errors.audience='These circles have no members yet';if(Object.keys(errors).length||droppedNote.length){render();document.getElementById(errors.text?'postText':'audience-first')?.focus();return}go('preview')}
 function publish(){lastPost={text:composer.text,audience:[...composer.audience]};posts.push({id:Date.now(),...lastPost,date:'Just now'});composer={text:'',audience:[]};go('published')}
 
 function render(){
   const activeId=document.activeElement?.id;
   const activePage=({post:'feed',editor:'circles',settings:'privacy',preview:'compose',published:'compose'})[page]||page;
   nav.innerHTML=[['feed','Feed'],['circles','Circles'],['compose','Post'],['privacy','Privacy']].map(([p,n])=>`<button class="${activePage===p?'active':''}" ${activePage===p?'aria-current="page"':''} onclick="${p==='compose'?'openCompose()':`go('${p}')`}">${icon(p,22)}${n}</button>`).join('');
-  let s=notice?`<div class="notice" role="status" aria-live="polite" tabindex="-1">${icon('check',18)}<span>${esc(notice)}</span></div>`:'';
+  let s=notice?`<div class="notice" role="status">${icon('check',18)}<span>${esc(notice)}</span></div>`:'';
   const h2=t=>`<h2 tabindex="-1">${t}</h2>`;
 
   if(page==='feed'){
     s+=h2('Home feed')+`<p class="lede">Your posts, and who can see each one.</p>`+posts.slice().reverse().map(p=>{const n=count(p.audience);return `<article class="card">
-      <div class="post-head"><div class="who"><span class="avatar me" aria-hidden="true">Me</span><b>My profile</b></div><span class="chips" role="img" aria-label="Post audience: ${esc(names(p.audience))}">${p.audience.map(get).filter(Boolean).map(chip).join('')}</span></div>
+      <div class="post-head"><div class="who"><span class="avatar me" aria-hidden="true">Me</span><b>My profile</b></div><span class="chips"><span class="sr-only">Audience: </span>${p.audience.map(get).filter(Boolean).map(chip).join('')}</span></div>
       <p class="post-text">${esc(p.text)}</p><p class="muted">${esc(p.date)}</p>
       <button class="btn secondary audience-control" aria-label="View audience details for ${esc(p.text)}" onclick="showPost(${p.id})"><span>View audience details</span><span class="count">${n} ${peopleWord(n)}${icon('chevron',18)}</span></button>
     </article>`}).join('')+`<button class="btn block" onclick="openCompose()">${icon('plus',20)}Create a post</button>`;
@@ -248,7 +252,7 @@ function render(){
     s+=back("go('feed')",'Back to feed')+h2('Post audience')+`<div class="card"><p class="post-text" style="margin-top:0">${esc(p.text)}</p><p class="muted">${esc(p.date)}</p></div><div class="card"><h3>Visible to</h3>${audienceView(p.audience,'can see this post')}</div>`;
   }
   if(page==='circles'){
-    s+=`<div class="row" style="flex-wrap:wrap">${h2('My circles')}<button class="btn small" onclick="edit(null)">${icon('plus',18)}New circle</button></div><p class="lede">Names and members. Sharing and suggestions are in Privacy.</p><div class="list">`+circles.map(c=>`<button class="rowbtn" onclick="edit(${c.id})" aria-label="Edit name and members for ${esc(c.name)}">
+    s+=`<div class="row" style="flex-wrap:wrap">${h2('My circles')}<button class="btn small" onclick="edit(null)">${icon('plus',18)}New circle</button></div><p class="lede">Names and members. Sharing and suggestions are in Privacy.</p><div class="list">`+circles.map(c=>`<button class="rowbtn" onclick="edit(${c.id})">
       <span class="title">${ring(c,24)}${esc(c.name)}</span>
       <span class="meta">${c.members.length?stack(c.members):''}${plural(c.members.length)}${c.visible?'':`<span class="status paused"><span class="dot"></span>Sharing paused</span>`}</span>
       <span class="go">Edit name &amp; members${icon('chevron',16)}</span>
@@ -266,7 +270,7 @@ function render(){
       <div class="actions"><button class="btn" onclick="saveCircle()">Save circle</button><button class="btn secondary" onclick="go('circles')">Cancel</button></div></div>`;
   }
   if(page==='privacy'){
-    s+=h2('Circle privacy settings')+`<p class="lede">Choose what each circle can do. These settings are simulated.</p><div class="list">`+circles.map(c=>`<button class="rowbtn" onclick="settings(${c.id})" aria-label="Edit privacy settings for ${esc(c.name)}">
+    s+=h2('Circle privacy settings')+`<p class="lede">Choose what each circle can do. These settings are simulated.</p><div class="list">`+circles.map(c=>`<button class="rowbtn" onclick="settings(${c.id})">
       <span class="title">${ring(c,24)}${esc(c.name)}</span>
       <span class="meta"><span class="status ${c.visible?'on':'paused'}"><span class="dot"></span>${c.visible?'Sharing on':'Sharing paused'}</span><span class="status ${c.discover?'on':'off'}"><span class="dot"></span>${c.discover?'Suggestions on':'Suggestions off'}</span></span>
       <span class="go">Edit privacy settings${icon('chevron',16)}</span>
@@ -281,6 +285,8 @@ function render(){
       <button class="btn block" onclick="saveSettings()">Save preferences</button></div>`;
   }
   if(page==='compose'){
+    const dropped=[...droppedNote,...pruneAudience()];droppedNote=[];
+    if(dropped.length)s+=`<div class="note" role="status">${icon('info',18)}<span>${esc(names(dropped))} ${dropped.length===1?'was':'were'} removed from this post because ${dropped.length===1?'it can’t':'they can’t'} be shared with right now.</span></div>`;
     const firstPick=circles.find(c=>c.visible&&c.members.length);
     s+=h2('Create a post')+`<div class="card">
       <label class="field" for="postText">Your post</label>
@@ -300,7 +306,7 @@ function render(){
     s+=`<div class="card done"><div class="done-mark">${icon('check',28)}</div>${h2('Post shared')}<p class="muted">Your simulated post was added to the feed. It went to ${n} ${peopleWord(n)} in:</p><div class="chips">${a.map(get).filter(Boolean).map(chip).join('')}</div><div class="actions"><button class="btn" onclick="go('feed')">View post in feed</button><button class="btn secondary" onclick="startCompose()">New post</button></div></div>`;
   }
   app.innerHTML=s;
-  if(notice){app.querySelector('[role=status]')?.focus();window.scrollTo({top:0,behavior:'smooth'})}
+  if(notice){app.querySelector('h2')?.focus({preventScroll:true});window.scrollTo({top:0,behavior:'smooth'})}
   else if(focusHeading){app.querySelector('h2')?.focus({preventScroll:true});window.scrollTo({top:0})}
   else if(activeId){document.getElementById(activeId)?.focus()}
   focusHeading=false;
