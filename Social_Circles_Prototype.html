@@ -6,102 +6,152 @@
 <title>CircleSafe — Interactive Prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@600;700&family=Hanken+Grotesk:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#ecebe6;--canvas:#faf9f7;--surface:#fff;--ink:#1d1e20;--muted:#5d5f64;
-  --line:#e5e2dc;--field:#d4d0c8;--accent:#2e5b4f;--accent-hover:#244a40;--accent-soft:#e7efeb;
-  --neutral-soft:#f1efeb;--warn-soft:#f7f0e1;--warn-ink:#654b12;
+  --ground:#e9ecf5;--canvas:#f6f7fb;--surface:#fff;
+  --ink:#22253a;--muted:#585d75;--line:#e2e5ef;--field:#c9cedf;
+  --primary:#22253a;--primary-hover:#363a55;--focus:#2a64c9;
+  --ok:#1e7350;--ok-soft:#e0f2e9;--warn:#8a5200;--warn-soft:#fdf0d8;--error:#b42318;
+  --display:"Gabarito","Hanken Grotesk",system-ui,sans-serif;
+  --text:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
 }
 *{box-sizing:border-box}
-html{background:var(--bg)}
-body{margin:0;font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45;color:var(--ink);-webkit-font-smoothing:antialiased}
+html{background:var(--ground);scrollbar-color:var(--field) transparent}
+body{margin:0;font-family:var(--text);font-size:16px;line-height:1.5;color:var(--ink);-webkit-font-smoothing:antialiased;caret-color:var(--focus)}
+::selection{background:#cfdcf7;color:var(--ink)}
 b,strong{font-weight:600}
 button{cursor:pointer;font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:2.5px solid var(--focus);outline-offset:2px}
 
-.shell{max-width:440px;min-height:100vh;margin:auto;background:var(--canvas);border-inline:1px solid var(--line);padding-bottom:92px}
-header{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:14px 20px;background:rgba(250,249,247,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-header h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em}
-main{padding:20px}
+.shell{max-width:440px;min-height:100vh;margin:auto;background:var(--canvas);padding-bottom:96px}
+header{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:14px 20px;background:rgba(246,247,251,.94);backdrop-filter:blur(10px)}
+header h1{margin:0;font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:-.01em}
+main{padding:8px 20px 20px}
 
-h2{margin:0 0 6px;font-size:22px;font-weight:600;letter-spacing:-.015em}
-h3{margin:20px 0 8px;font-size:15px;font-weight:600}
-p{margin:0 0 10px}
+h2{margin:0 0 6px;font-family:var(--display);font-size:28px;font-weight:700;line-height:1.15;letter-spacing:-.015em}
+h2:focus{outline:none}
+h3{margin:22px 0 10px;font-family:var(--display);font-size:20px;font-weight:600;line-height:1.25}
+p{margin:0 0 10px;text-wrap:pretty}
 .muted{color:var(--muted);font-size:14px}
-.section-help{margin:0 0 18px}
+.lede{color:var(--muted);margin:0 0 20px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.divider{height:1px;background:var(--line);margin:16px 0}
 .ic{flex:none;display:block}
 
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card{background:var(--surface);border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(34,37,58,.05),0 6px 20px -8px rgba(34,37,58,.10)}
 .card > h3:first-child{margin-top:0}
-.list{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:16px}
-.list-item{padding:16px}
-.list-item + .list-item{border-top:1px solid var(--line)}
-.list-item h3{margin:0}
-.list-item .muted{margin:4px 0 0}
-.list-item .btn{margin-top:12px}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border:1px solid transparent;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;font-size:15px;transition:background .15s}
-.btn:hover{background:var(--accent-hover)}
-.btn.secondary{background:var(--surface);color:var(--ink);border-color:var(--field)}
-.btn.secondary:hover{background:var(--neutral-soft)}
-.btn:disabled{opacity:.4}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:var(--primary);color:#fff;font-weight:600;font-size:16px;transition:background .15s,transform .15s var(--ease)}
+.btn:hover{background:var(--primary-hover)}
+.btn:active{transform:scale(.98)}
+.btn.secondary{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--field)}
+.btn.secondary:hover{background:#eef0f7}
 .btn.block{width:100%}
-.audience-control{width:100%;justify-content:space-between;text-align:left;padding:10px 12px 10px 14px;margin-top:12px}
-.audience-control .sub{display:block;font-size:13px;font-weight:400;color:var(--muted)}
-.audience-control .ic{color:var(--muted)}
-
-.back{display:inline-flex;align-items:center;gap:2px;min-height:44px;margin:-10px 0 2px -6px;padding:0 8px 0 0;background:none;border:0;color:var(--muted);font-size:14px}
-.back:hover{color:var(--ink)}
-
-.badge{display:inline-block;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;text-align:right;max-width:60%}
-.badge.neutral{background:var(--neutral-soft);color:var(--muted)}
-.tag{display:inline-block;margin:0 6px 6px 0;padding:4px 9px;border-radius:6px;background:var(--neutral-soft);font-size:13px}
-
-.notice,.note,.summary{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;font-size:14px}
-.notice{margin-bottom:16px;background:var(--accent-soft);color:#1f3f37}
-.notice .ic{color:var(--accent);margin-top:1px}
-.notice:focus{outline:none}
-.notice:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.note{margin:16px 0;background:var(--warn-soft);color:var(--warn-ink)}
-.note .ic{margin-top:1px}
-.summary{margin:14px 0 16px;background:var(--neutral-soft)}
-.summary .ic{color:var(--muted);margin-top:1px}
-
-label{font-size:14px;font-weight:600}
-input[type=text],textarea{width:100%;margin:6px 0 4px;padding:11px 12px;border:1px solid var(--field);border-radius:10px;background:#fff;font:inherit;color:inherit;resize:vertical}
-input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.checks{border-top:1px solid var(--line)}
-.check{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:400}
-.check input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--accent)}
-.check.disabled{color:var(--muted)}
-.setting .check{border-bottom:0}
-.setting .muted{margin:0 0 6px 32px}
-.setting + .setting{border-top:1px solid var(--line);margin-top:8px;padding-top:4px}
-
-.person{display:flex;align-items:center;gap:10px;min-width:0}
-.avatar{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:#e9e5dd;color:#45464a;font-size:12px;font-weight:600}
-.people .person{min-height:48px;border-bottom:1px solid var(--line)}
-.people{border-top:1px solid var(--line);margin-bottom:12px}
-.post-text{margin:12px 0 4px;font-size:16px}
-
-.done{text-align:center;padding:28px 16px}
-.done-mark{display:grid;place-items:center;width:52px;height:52px;margin:0 auto 14px;border-radius:50%;background:var(--accent-soft);color:var(--accent)}
-
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:3;display:flex;width:min(440px,100%);padding-bottom:env(safe-area-inset-bottom);background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line)}
-.nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;background:none;border:0;color:var(--muted);font-size:12px}
-.nav button.active{color:var(--accent);font-weight:600}
-.actions{display:flex;gap:10px;margin-top:16px}
+.btn.small{min-height:44px;padding:0 16px;font-size:15px}
+.actions{display:flex;gap:10px;margin-top:18px}
 .actions .btn{flex:1;padding:0 12px;white-space:nowrap}
-.hidden{display:none}
+.linkish{background:none;border:0;padding:0 4px;color:var(--focus);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:44px}
+.back{display:inline-flex;align-items:center;gap:2px;min-height:44px;margin:0 0 2px -8px;padding:0 10px 0 2px;background:none;border:0;border-radius:999px;color:var(--muted);font-size:15px}
+.back:hover{color:var(--ink);background:#eceef6}
+
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;border-radius:999px;background:var(--s);color:var(--c);font-size:14px;font-weight:600;line-height:1.3;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.ring{flex:none;display:block}
+
+.avatar{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;font-size:13px;font-weight:600;background:var(--av-s,#eceef6);color:var(--av-c,var(--ink))}
+.avatar.me{background:var(--ink);color:#fff}
+.stack{display:flex}
+.stack .avatar{width:30px;height:30px;font-size:11px;box-shadow:0 0 0 2px var(--surface)}
+.stack .avatar + .avatar{margin-left:-4px}
+
+.list{background:var(--surface);border-radius:22px;margin-bottom:16px;box-shadow:0 1px 2px rgba(34,37,58,.05),0 6px 20px -8px rgba(34,37,58,.10);overflow:hidden}
+.rowbtn{display:block;width:100%;padding:16px 18px;background:none;border:0;text-align:left}
+.rowbtn + .rowbtn{border-top:1px solid var(--line)}
+.rowbtn:hover{background:#f8f9fd}
+.rowbtn:focus-visible{outline-offset:-3px}
+.rowbtn .title{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:20px;font-weight:600}
+.rowbtn .meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin:8px 0 0 34px;color:var(--muted);font-size:14px}
+.rowbtn .go{display:flex;align-items:center;gap:2px;margin:10px 0 0 34px;color:var(--focus);font-size:14px;font-weight:600}
+.status{display:inline-flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.status.on{color:var(--ok)}
+.status.off{color:var(--muted)}
+.status.paused{color:var(--warn)}
+
+.post-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.post-head .who{display:flex;align-items:center;gap:10px;margin-right:auto}
+.post-text{margin:14px 0 4px;font-size:18px;line-height:1.45}
+.audience-control{width:100%;justify-content:space-between;margin-top:14px;padding:0 14px 0 20px}
+.audience-control .count{display:flex;align-items:center;gap:6px;color:var(--muted);font-weight:400;font-size:14px}
+
+.notice,.note{display:flex;align-items:flex-start;gap:10px;padding:13px 16px;border-radius:16px;font-size:15px}
+.notice{margin:6px 0 18px;background:var(--ok-soft);color:#174f38}
+.notice:focus{outline:none}
+.notice .ic{color:var(--ok);margin-top:2px}
+.note{margin:18px 0;background:#eef0f7;color:var(--muted);font-size:14px}
+.note .ic{margin-top:1px}
+.summary{color:var(--ink);align-items:center;font-size:15px}
+
+label.field{display:block;font-weight:600;font-size:15px}
+.req{font-weight:400;color:var(--muted)}
+input[type=text],textarea{display:block;width:100%;margin:8px 0 4px;padding:12px 14px;border:0;border-radius:14px;background:#f3f4f9;box-shadow:inset 0 0 0 1.5px var(--field);font:inherit;font-size:16px;color:inherit;resize:vertical;transition:box-shadow .15s}
+input[type=text]:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--focus)}
+::placeholder{color:var(--muted);opacity:1}
+input[aria-invalid=true],textarea[aria-invalid=true]{box-shadow:inset 0 0 0 2px var(--error)}
+.field-error{display:flex;align-items:center;gap:6px;margin:6px 0 0;color:var(--error);font-size:14px;font-weight:600}
+.hint{color:var(--muted);font-size:14px;margin:6px 0 0}
+.counter{font-size:14px;font-weight:600;color:var(--muted)}
+
+.picks{margin:4px 0 0}
+.pick{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 0;border-top:1px solid var(--line);font-size:16px;cursor:pointer}
+.pick:last-child{border-bottom:1px solid var(--line)}
+.pick input[type=checkbox]{width:22px;height:22px;margin:0;flex:none;accent-color:var(--ink);cursor:pointer}
+.pick .grow{flex:1;min-width:0}
+.pick .sub{display:block;color:var(--muted);font-size:14px}
+.pick.disabled{cursor:default}
+.pick.disabled .name{color:var(--muted)}
+
+.setting{padding:14px 0}
+.setting + .setting{border-top:1px solid var(--line)}
+.switch-row{display:flex;align-items:center;justify-content:space-between;gap:16px;font-weight:600;cursor:pointer}
+.switch{appearance:none;-webkit-appearance:none;flex:none;position:relative;width:52px;height:32px;margin:0;border-radius:999px;background:var(--field);cursor:pointer;transition:background .2s var(--ease)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(34,37,58,.25);transition:transform .25s var(--ease)}
+.switch:checked{background:var(--ok)}
+.switch:checked::after{transform:translateX(20px)}
+.setting .hint{max-width:34ch}
+
+.aud{margin:4px 0 6px}
+.aud-head{display:flex;align-items:center;gap:16px}
+.aud-count{margin:0;font-family:var(--display);font-size:20px;font-weight:600;line-height:1.25}
+.aud-count b{display:block;font-size:44px;line-height:1;font-weight:700;letter-spacing:-.02em}
+.venn{flex:none}
+.venn circle{animation:settle .7s var(--ease) both}
+@keyframes settle{from{transform:translateX(var(--from,0))}to{transform:none}}
+.aud .chips{margin:14px 0 4px}
+.overlap-note{display:flex;gap:10px;align-items:flex-start;margin:16px 0 4px;padding:12px 14px;border-radius:16px;background:var(--warn-soft);color:#6b4000;font-size:14px}
+.people{margin-top:8px}
+.people .p{display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid var(--line)}
+.people .p .grow{flex:1;min-width:0}
+.people .p .in{display:block;color:var(--muted);font-size:13px}
+.people .p.both .in{color:#6b4000;font-weight:600}
+.people .rings{display:flex;gap:2px}
+
+.done{text-align:center;padding:30px 20px}
+.done-mark{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:var(--ok-soft);color:var(--ok)}
+.done .chips{justify-content:center;margin:12px 0 4px}
+
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:3;display:flex;width:min(440px,100%);padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(10px);box-shadow:0 -1px 0 var(--line)}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;margin:0 2px;background:none;border:0;border-radius:16px;color:var(--muted);font-size:12px}
+.nav button.active{color:var(--ink);font-weight:600;background:#eef0f7}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="shell">
   <header>
-    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="10" cy="13" r="7" fill="none" stroke="#2e5b4f" stroke-width="2"/><circle cx="16" cy="13" r="7" fill="#2e5b4f" fill-opacity=".16" stroke="#2e5b4f" stroke-width="2"/></svg>
+    <svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><circle cx="11" cy="11" r="8.5" fill="#fce8f0" stroke="#b02c62" stroke-width="2.5"/><circle cx="19" cy="11" r="8.5" fill="#2a64c9" fill-opacity=".14" stroke="#2a64c9" stroke-width="2.5"/></svg>
     <h1>CircleSafe</h1>
   </header>
   <main id="app"></main>
@@ -109,103 +159,152 @@ input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);bo
 </div>
 <script>
 const people=['Alex Chen','Maya Patel','Jordan Lee','Taylor Kim','Sam Rivera','Morgan Reed','Casey Brown','Riley Shah'];
-let circles=[{id:1,name:'Close Friends',members:[0,1,2],visible:true,discover:false},{id:2,name:'Family',members:[3,4],visible:true,discover:false},{id:3,name:'School',members:[2,5,6],visible:true,discover:true},{id:4,name:'Work',members:[6,7],visible:false,discover:false}];
+const PALETTE=[{c:'#b02c62',s:'#fce8f0'},{c:'#985b00',s:'#fdf0d8'},{c:'#2a64c9',s:'#e4edfc'},{c:'#1e7350',s:'#e0f2e9'},{c:'#6c45bd',s:'#eee8fb'},{c:'#0c6f80',s:'#dcf1f4'}];
+const AVATAR=[{c:'#8f2a55',s:'#fbe4ee'},{c:'#7a4a00',s:'#fbecd2'},{c:'#1f4f9e',s:'#e1eafb'},{c:'#195e42',s:'#dcf0e6'},{c:'#55359a',s:'#ebe4fa'},{c:'#0a5a68',s:'#d8eff3'},{c:'#7d3f12',s:'#f8e6d8'},{c:'#3c4a63',s:'#e6eaf2'}];
+let circles=[{id:1,name:'Close Friends',members:[0,1,2],visible:true,discover:false,hue:0},{id:2,name:'Family',members:[3,4],visible:true,discover:false,hue:1},{id:3,name:'School',members:[2,5,6],visible:true,discover:true,hue:2},{id:4,name:'Work',members:[6,7],visible:false,discover:false,hue:3}];
 let posts=[{id:1,text:'Weekend plans with friends ☀️',audience:[1],date:'Today'},{id:2,text:'School project update 📚',audience:[3],date:'Yesterday'}];
-let page='feed',editing=null,form=null,composer={text:'',audience:[]},selectedPost=null,notice='';
+let page='feed',editing=null,form=null,composer={text:'',audience:[]},selectedPost=null,notice='',errors={},lastPost=null,focusHeading=false;
 const app=document.getElementById('app'),nav=document.getElementById('nav');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const get=id=>circles.find(c=>c.id===id);
 const names=ids=>ids.map(id=>get(id)?.name).filter(Boolean).join(', ')||'Nobody';
-const count=ids=>new Set(ids.flatMap(id=>get(id)?.members||[])).size;
-const plural=n=>n+' '+(n===1?'member':'members');
 const membersOf=ids=>[...new Set(ids.flatMap(id=>get(id)?.members||[]))];
+const count=ids=>membersOf(ids).length;
+const peopleWord=n=>n===1?'person':'people';
+const plural=n=>n+' '+(n===1?'member':'members');
+const pal=c=>PALETTE[(c?.hue??0)%PALETTE.length];
 
 const ICONS={
   feed:'<path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/>',
   circles:'<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>',
-  compose:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
+  compose:'<rect x="4" y="4" width="16" height="16" rx="5"/><path d="M12 8.5v7M8.5 12h7"/>',
   privacy:'<path d="M12 3.5 5 6.5v5c0 4.3 2.9 7.9 7 9 4.1-1.1 7-4.7 7-9v-5z"/><path d="m9.2 12 2 2 3.8-3.8"/>',
   back:'<path d="M14.5 6 8.5 12l6 6"/>',
   chevron:'<path d="m9.5 6 6 6-6 6"/>',
   check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
   plus:'<path d="M12 5.5v13M5.5 12h13"/>',
-  users:'<circle cx="9" cy="8.5" r="3.5"/><path d="M3 19.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3.5 3.5 0 0 1 0 6.6M18 14.3c1.9.7 3 2.6 3 5.2"/>',
-  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>'
+  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>',
+  alert:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5.5M12 16.2h.01"/>',
+  both:'<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/><path d="M12 7.4v9.2"/>'
 };
-const icon=(n,size=20)=>`<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+const icon=(n,size=20)=>`<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+const ring=(c,size=18)=>{const p=pal(c);return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="${p.s}" stroke="${p.c}" stroke-width="2.6"/></svg>`};
+const chip=c=>{const p=pal(c);return `<span class="chip" style="--c:${p.c};--s:${p.s}">${ring(c,16)}${esc(c.name)}</span>`};
 const initials=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2);
-const avatar=n=>`<span class="avatar" aria-hidden="true">${esc(initials(n))}</span>`;
-const personList=ids=>ids.length?`<div class="people">${ids.map(i=>`<div class="person">${avatar(people[i])}${esc(people[i])}</div>`).join('')}</div>`:'';
+const avatar=i=>{const a=AVATAR[i%AVATAR.length];return `<span class="avatar" style="--av-c:${a.c};--av-s:${a.s}" aria-hidden="true">${esc(initials(people[i]))}</span>`};
+const stack=(ids,max=4)=>`<span class="stack" aria-hidden="true">${ids.slice(0,max).map(avatar).join('')}</span>`;
 const back=(action,label)=>`<button class="back" onclick="${action}">${icon('back',18)}${label}</button>`;
+const fieldError=(id,msg)=>`<p class="field-error" id="${id}">${icon('alert',16)}${esc(msg)}</p>`;
 
-function go(p){page=p;notice='';render()}
-function flash(t,p){notice=t;page=p;render()}
-function setField(k,v){form[k]=v}
-function toggleMember(i){form.members=form.members.includes(i)?form.members.filter(x=>x!==i):[...form.members,i];render()}
-function toggleAudience(id){composer.audience=composer.audience.includes(id)?composer.audience.filter(x=>x!==id):[...composer.audience,id];render()}
-function edit(id){editing=id;let c=get(id);form=c?{...c,members:[...c.members]}:{id:Date.now(),name:'',members:[],visible:true,discover:false};go('editor')}
-function saveCircle(){let name=document.getElementById('circleName').value.trim();if(!name){alert('Please enter a circle name');return}form.name=name;let index=circles.findIndex(c=>c.id===form.id);if(index<0)circles.push({...form});else circles[index]={...form};flash('Circle “'+name+'” '+(index<0?'created':'updated')+'. '+form.members.length+' '+(form.members.length===1?'member':'members')+' saved.','circles')}
-function saveSettings(){let c=get(editing);c.visible=document.getElementById('visible').checked;c.discover=document.getElementById('discover').checked;flash('Privacy settings saved for '+c.name+'. Sharing is '+(c.visible?'enabled':'paused')+' and account discovery is '+(c.discover?'on':'off')+'.','circles')}
+/* The audience, drawn: one ring per circle, overlapping like the people in them */
+function venn(ids){
+  const cs=ids.map(get).filter(Boolean);if(!cs.length)return '';
+  const r=26,step=cs.length>2?22:28,w=r*2+step*(cs.length-1)+6,h=r*2+6;
+  return `<svg class="venn" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${cs.map((c,k)=>{const p=pal(c);return `<circle cx="${r+3+k*step}" cy="${r+3}" r="${r}" fill="${p.c}" fill-opacity=".16" stroke="${p.c}" stroke-width="2.6" style="--from:${-(k*step)}px"/>`}).join('')}</svg>`;
+}
+function audienceView(ids,verb){
+  const ms=membersOf(ids),n=ms.length,chosen=ids.map(get).filter(Boolean);
+  const inCircles=i=>chosen.filter(c=>c.members.includes(i));
+  const overlaps=ms.filter(i=>inCircles(i).length>1);
+  let s=`<div class="aud"><div class="aud-head">${venn(ids)}<p class="aud-count"><b>${n}</b>${peopleWord(n)} ${verb}</p></div><div class="chips">${chosen.map(chip).join('')}</div>`;
+  if(overlaps.length)s+=`<div class="overlap-note">${icon('both',18)}<span>${overlaps.map(i=>esc(people[i])).join(' and ')} ${overlaps.length===1?'is':'are'} in more than one of these circles. Each person only sees the post once.</span></div>`;
+  s+=ms.length?`<div class="people">${ms.map(i=>{const cs=inCircles(i);return `<div class="p ${cs.length>1?'both':''}">${avatar(i)}<span class="grow">${esc(people[i])}<span class="in">${cs.map(c=>esc(c.name)).join(' + ')}</span></span><span class="rings">${cs.map(c=>ring(c,14)).join('')}</span></div>`}).join('')}</div>`:`<p class="muted">No one yet. Add members to these circles first.</p>`;
+  return s+`</div>`;
+}
+
+function go(p){page=p;notice='';errors={};focusHeading=true;render()}
+function flash(t,p){notice=t;page=p;errors={};render()}
+function setField(k,v){form[k]=v;if(errors.name&&v.trim()){delete errors.name;document.getElementById('circleName')?.removeAttribute('aria-invalid');document.getElementById('name-error')?.remove()}}
+function toggleMember(i){form.members=form.members.includes(i)?form.members.filter(x=>x!==i):[...form.members,i];const c=document.getElementById('member-count');if(c)c.textContent=form.members.length+' selected'}
+function toggleAudience(id){composer.audience=composer.audience.includes(id)?composer.audience.filter(x=>x!==id):[...composer.audience,id];if(composer.audience.length&&count(composer.audience)){delete errors.audience;document.getElementById('audience-error')?.remove()}const el=document.getElementById('summary');if(el)el.innerHTML=summaryHTML()}
+function summaryHTML(){const n=count(composer.audience);return composer.audience.length?`${stack(membersOf(composer.audience))}<span><b>${n} ${peopleWord(n)}</b> will see this</span>`:`<span>Choose at least one circle to see who will get this post.</span>`}
+function clearTextError(el){composer.text=el.value;if(errors.text&&el.value.trim()){delete errors.text;el.removeAttribute('aria-invalid');document.getElementById('text-error')?.remove()}}
+function edit(id){editing=id;let c=get(id);form=c?{...c,members:[...c.members]}:{id:Date.now(),name:'',members:[],visible:true,discover:false,hue:circles.length};go('editor')}
+function saveCircle(){let name=document.getElementById('circleName').value.trim();if(!name){errors={name:'Enter a circle name'};render();document.getElementById('circleName').focus();return}form.name=name;let index=circles.findIndex(c=>c.id===form.id);if(index<0)circles.push({...form});else circles[index]={...form};flash('Circle “'+name+'” '+(index<0?'created':'updated')+'. '+plural(form.members.length)+' saved.','circles')}
+function saveSettings(){let c=get(editing);c.visible=document.getElementById('visible').checked;c.discover=document.getElementById('discover').checked;flash('Privacy settings saved for '+c.name+'. Sharing is '+(c.visible?'on':'paused')+' and profile suggestions are '+(c.discover?'on':'off')+'.','circles')}
 function showPost(id){selectedPost=id;go('post')}
+function settings(id){editing=id;go('settings')}
+function startCompose(){composer={text:'',audience:[]};go('compose')}
+function openCompose(){if(page==='published')composer={text:'',audience:[]};go('compose')}
+function preview(){composer.text=document.getElementById('postText').value.trim();errors={};if(!composer.text)errors.text='Write something to share';if(!composer.audience.length)errors.audience='Choose at least one circle';else if(!count(composer.audience))errors.audience='These circles have no members yet';if(Object.keys(errors).length){render();document.getElementById(errors.text?'postText':'audience-first')?.focus();return}go('preview')}
+function publish(){lastPost={text:composer.text,audience:[...composer.audience]};posts.push({id:Date.now(),...lastPost,date:'Just now'});composer={text:'',audience:[]};go('published')}
 
 function render(){
+  const activeId=document.activeElement?.id;
   const activePage=({post:'feed',editor:'circles',settings:'privacy',preview:'compose',published:'compose'})[page]||page;
-  nav.innerHTML=[['feed','Feed'],['circles','Circles'],['compose','Post'],['privacy','Privacy']].map(([p,n])=>`<button class="${activePage===p?'active':''}" ${activePage===p?'aria-current="page"':''} onclick="${p==='compose'?'startCompose()':`go('${p}')`}">${icon(p,22)}${n}</button>`).join('');
+  nav.innerHTML=[['feed','Feed'],['circles','Circles'],['compose','Post'],['privacy','Privacy']].map(([p,n])=>`<button class="${activePage===p?'active':''}" ${activePage===p?'aria-current="page"':''} onclick="${p==='compose'?'openCompose()':`go('${p}')`}">${icon(p,22)}${n}</button>`).join('');
   let s=notice?`<div class="notice" role="status" aria-live="polite" tabindex="-1">${icon('check',18)}<span>${esc(notice)}</span></div>`:'';
+  const h2=t=>`<h2 tabindex="-1">${t}</h2>`;
 
   if(page==='feed'){
-    s+=`<h2>Home feed</h2><p class="muted section-help">Explore sample posts and check who can see them.</p>`+posts.slice().reverse().map(p=>`<article class="card">
-      <div class="row"><div class="person">${'<span class="avatar" aria-hidden="true">Me</span>'}<b>My profile</b></div><span class="badge" aria-label="Post audience: ${esc(names(p.audience))}">Audience: ${esc(names(p.audience))}</span></div>
-      <p class="post-text">${esc(p.text)}</p><p class="muted">${p.date}</p>
-      <button class="btn secondary audience-control" aria-label="View audience details for ${esc(p.text)}" onclick="showPost(${p.id})"><span>View audience details<span class="sub">Who can see this post? ${esc(names(p.audience))}</span></span>${icon('chevron',18)}</button>
-    </article>`).join('')+`<button class="btn block" onclick="startCompose()">Create a post</button>`;
+    s+=h2('Home feed')+`<p class="lede">Your posts, and who can see each one.</p>`+posts.slice().reverse().map(p=>{const n=count(p.audience);return `<article class="card">
+      <div class="post-head"><div class="who"><span class="avatar me" aria-hidden="true">Me</span><b>My profile</b></div><span class="chips" role="img" aria-label="Post audience: ${esc(names(p.audience))}">${p.audience.map(get).filter(Boolean).map(chip).join('')}</span></div>
+      <p class="post-text">${esc(p.text)}</p><p class="muted">${esc(p.date)}</p>
+      <button class="btn secondary audience-control" aria-label="View audience details for ${esc(p.text)}" onclick="showPost(${p.id})"><span>View audience details</span><span class="count">${n} ${peopleWord(n)}${icon('chevron',18)}</span></button>
+    </article>`}).join('')+`<button class="btn block" onclick="openCompose()">${icon('plus',20)}Create a post</button>`;
   }
   if(page==='post'){
     let p=posts.find(x=>x.id===selectedPost);
-    s+=`${back("go('feed')",'Back to feed')}<h2>Post audience</h2><div class="card"><p class="post-text" style="margin-top:0">${esc(p.text)}</p><h3>Visible to</h3>${p.audience.map(id=>`<span class="tag">${esc(get(id)?.name||'Deleted circle')}</span>`).join('')}<p><b>${count(p.audience)} unique sample people</b> may see this post.</p><div class="divider"></div><h3>People included</h3>${personList(membersOf(p.audience))||'<p class="muted">No members</p>'}</div>`;
+    s+=back("go('feed')",'Back to feed')+h2('Post audience')+`<div class="card"><p class="post-text" style="margin-top:0">${esc(p.text)}</p><p class="muted">${esc(p.date)}</p></div><div class="card"><h3>Visible to</h3>${audienceView(p.audience,'can see this post')}</div>`;
   }
   if(page==='circles'){
-    s+=`<div class="row"><h2>My circles</h2><button class="btn" onclick="edit(null)">${icon('plus',18)}New circle</button></div><p class="muted section-help">Manage circle names and members here. To change sharing or account discovery, open Privacy in the bottom navigation.</p><div class="list">`+circles.map(c=>`<div class="list-item">
-      <div class="row"><h3>${esc(c.name)}</h3><span class="muted" style="margin:0">${plural(c.members.length)}</span></div>
-      <p class="muted">${c.members.map(i=>esc(people[i])).join(', ')||'No members yet'}</p>
-      <p class="muted">Account discoverability: ${c.discover?'On':'Off'} · Sharing: ${c.visible?'Allowed':'Paused'}</p>
-      <button class="btn secondary block" onclick="edit(${c.id})">Edit name &amp; members</button>
-    </div>`).join('')+`</div>`;
+    s+=`<div class="row" style="flex-wrap:wrap">${h2('My circles')}<button class="btn small" onclick="edit(null)">${icon('plus',18)}New circle</button></div><p class="lede">Names and members. Sharing and suggestions are in Privacy.</p><div class="list">`+circles.map(c=>`<button class="rowbtn" onclick="edit(${c.id})" aria-label="Edit name and members for ${esc(c.name)}">
+      <span class="title">${ring(c,24)}${esc(c.name)}</span>
+      <span class="meta">${c.members.length?stack(c.members):''}${plural(c.members.length)}${c.visible?'':`<span class="status paused"><span class="dot"></span>Sharing paused</span>`}</span>
+      <span class="go">Edit name &amp; members${icon('chevron',16)}</span>
+    </button>`).join('')+`</div>`;
   }
   if(page==='editor'){
-    s+=`${back("go('circles')",'Circles')}<h2>${editing?'Edit circle':'Create circle'}</h2><div class="card"><label for="circleName">Circle name</label><input type="text" id="circleName" maxlength="35" oninput="setField('name',this.value)" value="${esc(form.name)}" placeholder="e.g. Sports Team"><h3>Select members</h3><p class="muted">Select people who should belong to this circle.</p><div class="checks">${people.map((p,i)=>`<label class="check"><input type="checkbox" ${form.members.includes(i)?'checked':''} onchange="toggleMember(${i})">${avatar(p)}${esc(p)}</label>`).join('')}</div><div class="actions"><button class="btn" onclick="saveCircle()">Save circle</button><button class="btn secondary" onclick="go('circles')">Cancel</button></div></div>`;
+    const e=errors.name;
+    s+=back("go('circles')",'Circles')+h2(editing?'Edit circle':'Create circle')+`<div class="card">
+      <label class="field" for="circleName">Circle name <span class="req">(required)</span></label>
+      <input type="text" id="circleName" maxlength="35" oninput="setField('name',this.value)" value="${esc(form.name)}" placeholder="e.g. Sports Team" ${e?'aria-invalid="true" aria-describedby="name-error"':''}>
+      ${e?fieldError('name-error',e):''}
+      <div class="row" style="margin-top:22px"><h3 style="margin:0">Select members</h3><span class="counter" id="member-count" aria-live="polite">${form.members.length} selected</span></div>
+      <p class="hint" style="margin-bottom:8px">Choose who belongs in this circle.</p>
+      <div class="picks">${people.map((p,i)=>`<label class="pick"><input type="checkbox" id="m${i}" ${form.members.includes(i)?'checked':''} onchange="toggleMember(${i})">${avatar(i)}<span class="grow">${esc(p)}</span></label>`).join('')}</div>
+      <div class="actions"><button class="btn" onclick="saveCircle()">Save circle</button><button class="btn secondary" onclick="go('circles')">Cancel</button></div></div>`;
   }
   if(page==='privacy'){
-    s+=`<h2>Circle privacy settings</h2><p class="muted section-help">Manage sharing and account discovery here. To change a circle’s name or members, open Circles in the bottom navigation. These privacy settings are simulated.</p><div class="list">`+circles.map(c=>`<div class="list-item">
-      <div class="row"><h3>${esc(c.name)}</h3><span class="badge ${c.discover?'':'neutral'}">${c.discover?'Discoverable':'Hidden'}</span></div>
-      <p class="muted">${c.visible?'Posting enabled':'Posting paused'} · ${plural(c.members.length)}</p>
-      <button class="btn secondary block" onclick="settings(${c.id})">Edit privacy settings</button>
-    </div>`).join('')+`</div>`;
+    s+=h2('Circle privacy settings')+`<p class="lede">Choose what each circle can do. These settings are simulated.</p><div class="list">`+circles.map(c=>`<button class="rowbtn" onclick="settings(${c.id})" aria-label="Edit privacy settings for ${esc(c.name)}">
+      <span class="title">${ring(c,24)}${esc(c.name)}</span>
+      <span class="meta"><span class="status ${c.visible?'on':'paused'}"><span class="dot"></span>${c.visible?'Sharing on':'Sharing paused'}</span><span class="status ${c.discover?'on':'off'}"><span class="dot"></span>${c.discover?'Suggestions on':'Suggestions off'}</span></span>
+      <span class="go">Edit privacy settings${icon('chevron',16)}</span>
+    </button>`).join('')+`</div>`;
   }
   if(page==='settings'){
     let c=get(editing);
-    s+=`${back("go('privacy')",'Privacy')}<h2>${esc(c.name)} preferences</h2><div class="card">
-      <div class="setting"><label class="check"><input type="checkbox" id="visible" ${c.visible?'checked':''}> Allow sharing posts with this circle</label><p class="muted">When disabled, this circle cannot be selected for new posts.</p></div>
-      <div class="setting"><label class="check"><input type="checkbox" id="discover" ${c.discover?'checked':''}> Allow account discovery through this circle</label><p class="muted">When on, people connected through this circle may receive a suggestion to view your profile. When off, this circle will not be used for profile suggestions.</p></div>
+    s+=back("go('privacy')",'Privacy')+`<div class="row" style="justify-content:flex-start;gap:12px">${ring(c,30)}${h2(esc(c.name)+' privacy')}</div><p class="lede">${plural(c.members.length)}</p><div class="card">
+      <div class="setting"><label class="switch-row" for="visible">Allow sharing posts with this circle<input type="checkbox" role="switch" class="switch" id="visible" aria-describedby="visible-hint" ${c.visible?'checked':''}></label><p class="hint" id="visible-hint">When off, you can’t pick this circle for new posts.</p></div>
+      <div class="setting"><label class="switch-row" for="discover">Suggest my profile to this circle<input type="checkbox" role="switch" class="switch" id="discover" aria-describedby="discover-hint" ${c.discover?'checked':''}></label><p class="hint" id="discover-hint">Also called account discovery. When on, people in this circle may be shown your profile as a suggestion.</p></div>
       <div class="note">${icon('info',18)}<span>Changes here do not alter privacy settings in any real social media app.</span></div>
       <button class="btn block" onclick="saveSettings()">Save preferences</button></div>`;
   }
   if(page==='compose'){
-    s+=`<h2>Create a post</h2><div class="card"><label for="postText">Your post</label><textarea id="postText" rows="4" placeholder="What would you like to share?" oninput="composer.text=this.value">${esc(composer.text)}</textarea><h3>Choose audience circles</h3><div class="checks">${circles.map(c=>`<label class="check ${c.visible?'':'disabled'}"><input type="checkbox" ${composer.audience.includes(c.id)?'checked':''} ${!c.visible?'disabled':''} onchange="toggleAudience(${c.id})">${esc(c.name)} ${!c.visible?'(sharing paused)':''}</label>`).join('')}</div><div class="summary">${icon('users',18)}<span>Selected audience: ${esc(names(composer.audience))}<br>${count(composer.audience)} unique sample people</span></div><button class="btn block" onclick="preview()">Preview audience</button></div>`;
+    const firstPick=circles.find(c=>c.visible&&c.members.length);
+    s+=h2('Create a post')+`<div class="card">
+      <label class="field" for="postText">Your post</label>
+      <textarea id="postText" rows="4" placeholder="What would you like to share?" oninput="clearTextError(this)" ${errors.text?'aria-invalid="true" aria-describedby="text-error"':''}>${esc(composer.text)}</textarea>
+      ${errors.text?fieldError('text-error',errors.text):''}
+      <h3 id="aud-label">Choose audience circles</h3>
+      <div class="picks" role="group" aria-labelledby="aud-label" ${errors.audience?'aria-describedby="audience-error"':''}>${circles.map(c=>{const off=!c.visible||!c.members.length;return `<div class="pick ${off?'disabled':''}"><input type="checkbox" id="${c===firstPick?'audience-first':'a'+c.id}" ${composer.audience.includes(c.id)?'checked':''} ${off?'disabled':''} onchange="toggleAudience(${c.id})">${ring(c,22)}<label class="grow" for="${c===firstPick?'audience-first':'a'+c.id}"><span class="name">${esc(c.name)}</span><span class="sub">${!c.visible?'Sharing paused':!c.members.length?'No members yet':c.members.length+' '+peopleWord(c.members.length)}</span></label>${!c.visible?`<button type="button" class="linkish" onclick="settings(${c.id})" aria-label="Change sharing for ${esc(c.name)}">Change</button>`:''}</div>`}).join('')}</div>
+      ${errors.audience?fieldError('audience-error',errors.audience):''}
+      <div class="note summary" id="summary" aria-live="polite">${summaryHTML()}</div>
+      <button class="btn block" onclick="preview()">Preview audience</button></div>`;
   }
   if(page==='preview'){
-    s+=`<h2>Review before sharing</h2><div class="card"><h3>Your post</h3><p class="post-text" style="margin-top:0">${esc(composer.text)}</p><div class="divider"></div><h3>Who can see this?</h3>${composer.audience.map(id=>`<span class="tag">${esc(get(id)?.name)}</span>`).join('')}<p><b>${count(composer.audience)} unique people</b> in your selected circles.</p><h3>Audience members</h3>${personList(membersOf(composer.audience))||'<p class="muted">None</p>'}<div class="note">${icon('info',18)}<span>Check this list carefully before publishing. People may belong to multiple circles.</span></div><div class="actions"><button class="btn secondary" onclick="go('compose')">Edit audience</button><button class="btn" onclick="publish()">Confirm &amp; publish</button></div></div>`;
+    s+=h2('Review before sharing')+`<div class="card"><h3>Your post</h3><p class="post-text" style="margin-top:0">${esc(composer.text)}</p></div><div class="card"><h3>Who can see this?</h3>${audienceView(composer.audience,'will see this post')}<div class="actions"><button class="btn secondary" onclick="go('compose')">Edit audience</button><button class="btn" onclick="publish()">Confirm &amp; publish</button></div></div>`;
   }
   if(page==='published'){
-    s+=`<div class="card done"><div class="done-mark">${icon('check',26)}</div><h2>Post shared</h2><p class="muted">Your simulated post was added to the feed with your selected audience.</p><div class="actions"><button class="btn" onclick="go('feed')">View post in feed</button><button class="btn secondary" onclick="startCompose()">New post</button></div></div>`;
+    const a=lastPost?.audience||[],n=count(a);
+    s+=`<div class="card done"><div class="done-mark">${icon('check',28)}</div>${h2('Post shared')}<p class="muted">Your simulated post was added to the feed. It went to ${n} ${peopleWord(n)} in:</p><div class="chips">${a.map(get).filter(Boolean).map(chip).join('')}</div><div class="actions"><button class="btn" onclick="go('feed')">View post in feed</button><button class="btn secondary" onclick="startCompose()">New post</button></div></div>`;
   }
   app.innerHTML=s;
-  if(notice){app.querySelector('[role=status]')?.focus();window.scrollTo({top:0,behavior:'smooth'});}
+  if(notice){app.querySelector('[role=status]')?.focus();window.scrollTo({top:0,behavior:'smooth'})}
+  else if(focusHeading){app.querySelector('h2')?.focus({preventScroll:true});window.scrollTo({top:0})}
+  else if(activeId){document.getElementById(activeId)?.focus()}
+  focusHeading=false;
 }
-function settings(id){editing=id;go('settings')}
-function startCompose(){composer={text:'',audience:[]};go('compose')}
-function preview(){composer.text=document.getElementById('postText').value.trim();if(!composer.text){alert('Write a post before continuing');return}if(!composer.audience.length){alert('Choose at least one audience circle');return}go('preview')}
-function publish(){posts.push({id:Date.now(),text:composer.text,audience:[...composer.audience],date:'Just now'});go('published')}
 render();
 </script>
 </body>
