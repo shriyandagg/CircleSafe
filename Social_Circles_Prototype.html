@@ -180,6 +180,7 @@ let page='feed',editing=null,form=null,composer={text:'',audience:[]},selectedPo
 const app=document.getElementById('app'),nav=document.getElementById('nav');
 const unsavedDialog=document.getElementById('unsaved-dialog');
 let editorInitial=null,pendingNavigation=null,returnFocus=null;
+let settingsContext=null;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const get=id=>circles.find(c=>c.id===id);
 const names=ids=>ids.map(id=>get(id)?.name).filter(Boolean).join(', ')||'Nobody';
@@ -244,6 +245,7 @@ function go(p,prepare){
   // Defer destination setup too, so Keep editing preserves the current draft.
   const navigate=()=>{
     if(page==='editor'){form=null;editorInitial=null}
+    if(page==='settings')settingsContext=null;
     if(prepare)prepare();
     page=p;notice='';errors={};focusHeading=true;render();
   };
@@ -271,9 +273,22 @@ function summaryHTML(){const n=count(composer.audience);return composer.audience
 function clearTextError(el){composer.text=el.value;if(errors.text&&el.value.trim()){delete errors.text;el.removeAttribute('aria-invalid');document.getElementById('text-error')?.remove()}}
 function edit(id){go('editor',()=>{editing=id;let c=get(id);form=c?{...c,members:[...c.members]}:{id:Date.now(),name:'',members:[],visible:true,discover:false,hue:circles.length};editorInitial={name:form.name,members:[...form.members]}})}
 function saveCircle(){let name=document.getElementById('circleName').value.trim();if(!name){errors={name:'Enter a circle name'};render();document.getElementById('circleName').focus();return}form.name=name;let index=circles.findIndex(c=>c.id===form.id);if(index<0)circles.push({...form});else circles[index]={...form};flash('Circle “'+name+'” '+(index<0?'created':'updated')+'. '+plural(form.members.length)+' saved.','circles')}
-function saveSettings(){let c=get(editing);c.visible=document.getElementById('visible').checked;c.discover=document.getElementById('discover').checked;flash('Privacy settings saved for '+c.name+'. Sharing is '+(c.visible?'on':'paused')+' and profile suggestions are '+(c.discover?'on':'off')+'.','circles')}
+function saveSettings(){
+  let c=get(editing);
+  c.visible=document.getElementById('visible').checked;c.discover=document.getElementById('discover').checked;
+  const fromComposer=settingsContext?.circleId===editing&&settingsContext.returnTo==='compose';
+  settingsContext=null;
+  let message='Privacy settings saved for '+c.name+'. Sharing is '+(c.visible?'on':'paused')+' and profile suggestions are '+(c.discover?'on':'off')+'.';
+  if(fromComposer)message+=eligible(c.id)?' You can now select this circle for your post.':c.visible?' Add members before selecting this circle for your post.':' Sharing must be enabled before selecting this circle for your post.';
+  flash(message,fromComposer?'compose':'circles');
+}
 function showPost(id){go('post',()=>{selectedPost=id})}
-function settings(id){go('settings',()=>{editing=id})}
+function settings(id){go('settings',()=>{
+  const fromComposer=page==='compose';
+  if(fromComposer)composer.text=document.getElementById('postText').value;
+  settingsContext={circleId:id,returnTo:fromComposer?'compose':'privacy'};
+  editing=id;
+})}
 function startCompose(){go('compose',()=>{composer={text:'',audience:[]}})}
 function openCompose(){go('compose',()=>{if(page==='published')composer={text:'',audience:[]}})}
 function eligible(id){const c=get(id);return !!c&&c.visible===true&&c.members.length>0}
@@ -344,7 +359,8 @@ function render(){
   }
   if(page==='settings'){
     let c=get(editing);
-    s+=back("go('privacy')",'Privacy')+`<div class="row" style="justify-content:flex-start;gap:12px">${ring(c,30)}${h2(esc(c.name)+' privacy')}</div><p class="lede">${plural(c.members.length)}</p><div class="card">
+    const returnTo=settingsContext?.circleId===editing?settingsContext.returnTo:'privacy';
+    s+=back(`go('${returnTo}')`,returnTo==='compose'?'Back to post':'Privacy')+`<div class="row" style="justify-content:flex-start;gap:12px">${ring(c,30)}${h2(esc(c.name)+' privacy')}</div><p class="lede">${plural(c.members.length)}</p><div class="card">
       <div class="setting"><label class="switch-row" for="visible">Allow sharing posts with this circle<input type="checkbox" role="switch" class="switch" id="visible" aria-describedby="visible-hint" ${c.visible?'checked':''}></label><p class="hint" id="visible-hint">When off, you can’t pick this circle for new posts.</p></div>
       <div class="setting"><label class="switch-row" for="discover">Suggest my profile to this circle<input type="checkbox" role="switch" class="switch" id="discover" aria-describedby="discover-hint" ${c.discover?'checked':''}></label><p class="hint" id="discover-hint">Also called account discovery. When on, people in this circle may be shown your profile as a suggestion.</p></div>
       <div class="note">${icon('info',18)}<span>Changes here do not alter privacy settings in any real social media app.</span></div>
