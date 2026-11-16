@@ -52,6 +52,10 @@ p{margin:0 0 10px;text-wrap:pretty}
 .btn.small{min-height:44px;padding:0 16px;font-size:15px}
 .actions{display:flex;gap:10px;margin-top:18px}
 .actions .btn{flex:1;padding:0 12px;white-space:nowrap}
+.confirm-dialog{width:min(400px,calc(100% - 32px));max-height:calc(100% - 32px);margin:auto;border:0;color:var(--ink)}
+.confirm-dialog::backdrop{background:rgba(34,37,58,.45)}
+.confirm-dialog h2{font-size:24px;margin-bottom:12px}
+.confirm-dialog .actions{flex-wrap:wrap}
 .linkish{background:none;border:0;padding:0 4px;color:var(--focus);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:44px}
 .back{display:inline-flex;align-items:center;gap:2px;min-height:44px;margin:0 0 2px -8px;padding:0 10px 0 2px;background:none;border:0;border-radius:999px;color:var(--muted);font-size:15px}
 .back:hover{color:var(--ink);background:#eceef6}
@@ -158,6 +162,14 @@ input[aria-invalid=true],textarea[aria-invalid=true]{box-shadow:inset 0 0 0 2px 
   <main id="app"></main>
   <nav class="nav" id="nav" aria-label="Main"></nav>
 </div>
+<dialog id="unsaved-dialog" class="card confirm-dialog" aria-labelledby="unsaved-title" aria-describedby="unsaved-description">
+  <h2 id="unsaved-title">Discard unsaved changes?</h2>
+  <p id="unsaved-description">You have unsaved changes. Keep editing or discard them to leave this screen.</p>
+  <div class="actions">
+    <button type="button" id="keep-editing" class="btn" autofocus onclick="finishNavigation(false)">Keep editing</button>
+    <button type="button" class="btn secondary" onclick="finishNavigation(true)">Discard changes</button>
+  </div>
+</dialog>
 <script>
 const people=['Alex Chen','Maya Patel','Jordan Lee','Taylor Kim','Sam Rivera','Morgan Reed','Casey Brown','Riley Shah'];
 const PALETTE=[{c:'#b02c62',s:'#fce8f0'},{c:'#985b00',s:'#fdf0d8'},{c:'#2a64c9',s:'#e4edfc'},{c:'#1e7350',s:'#e0f2e9'},{c:'#6c45bd',s:'#eee8fb'},{c:'#0c6f80',s:'#dcf1f4'}];
@@ -166,6 +178,8 @@ let circles=[{id:1,name:'Close Friends',members:[0,1,2],visible:true,discover:fa
 let posts=[{id:1,text:'Weekend plans with friends ☀️',audience:[1],date:'Yesterday'},{id:2,text:'School project update 📚',audience:[3],date:'Today'}];
 let page='feed',editing=null,form=null,composer={text:'',audience:[]},selectedPost=null,notice='',errors={},lastPost=null,focusHeading=false;
 const app=document.getElementById('app'),nav=document.getElementById('nav');
+const unsavedDialog=document.getElementById('unsaved-dialog');
+let editorInitial=null,pendingNavigation=null,returnFocus=null;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const get=id=>circles.find(c=>c.id===id);
 const names=ids=>ids.map(id=>get(id)?.name).filter(Boolean).join(', ')||'Nobody';
@@ -213,20 +227,55 @@ function audienceView(ids,verb){
   return s+`</div>`;
 }
 
-function go(p){page=p;notice='';errors={};focusHeading=true;render()}
+// Compare values, not a sticky dirty flag: reverting an edit makes the screen clean.
+function hasUnsavedChanges(){
+  if(page==='editor'&&editorInitial){
+    return form.name!==editorInitial.name||form.members.length!==editorInitial.members.length||form.members.some(id=>!editorInitial.members.includes(id));
+  }
+  if(page==='settings'){
+    const c=get(editing);
+    return document.getElementById('visible').checked!==c.visible||document.getElementById('discover').checked!==c.discover;
+  }
+  return false;
+}
+function go(p,prepare){
+  if(unsavedDialog.open)return;
+  if(p===page&&!prepare&&(page==='editor'||page==='settings'))return;
+  // Defer destination setup too, so Keep editing preserves the current draft.
+  const navigate=()=>{
+    if(page==='editor'){form=null;editorInitial=null}
+    if(prepare)prepare();
+    page=p;notice='';errors={};focusHeading=true;render();
+  };
+  if(hasUnsavedChanges()){
+    pendingNavigation=navigate;returnFocus=document.activeElement;
+    unsavedDialog.showModal();document.getElementById('keep-editing').focus();
+    return;
+  }
+  navigate();
+}
+function finishNavigation(discard){
+  const navigate=pendingNavigation;pendingNavigation=null;
+  unsavedDialog.close();
+  if(discard){if(navigate)navigate()}
+  else if(returnFocus?.isConnected)returnFocus.focus();
+  returnFocus=null;
+}
+// Native modal dialogs contain keyboard focus and make the background inert.
+unsavedDialog.addEventListener('cancel',event=>{event.preventDefault();finishNavigation(false)});
 function flash(t,p){notice=t;page=p;errors={};render()}
 function setField(k,v){form[k]=v;if(errors.name&&v.trim()){delete errors.name;document.getElementById('circleName')?.removeAttribute('aria-invalid');document.getElementById('name-error')?.remove()}}
 function toggleMember(i){form.members=form.members.includes(i)?form.members.filter(x=>x!==i):[...form.members,i];const c=document.getElementById('member-count');if(c)c.textContent=form.members.length+' selected'}
 function toggleAudience(id){composer.audience=composer.audience.includes(id)?composer.audience.filter(x=>x!==id):[...composer.audience,id];if(composer.audience.length&&count(composer.audience)){delete errors.audience;document.getElementById('audience-error')?.remove()}const el=document.getElementById('summary');if(el)el.innerHTML=summaryHTML()}
 function summaryHTML(){const n=count(composer.audience);return composer.audience.length?`${stack(membersOf(composer.audience))}<span><b>${n} ${peopleWord(n)}</b> will see this</span>`:`<span>Choose at least one circle to see who will get this post.</span>`}
 function clearTextError(el){composer.text=el.value;if(errors.text&&el.value.trim()){delete errors.text;el.removeAttribute('aria-invalid');document.getElementById('text-error')?.remove()}}
-function edit(id){editing=id;let c=get(id);form=c?{...c,members:[...c.members]}:{id:Date.now(),name:'',members:[],visible:true,discover:false,hue:circles.length};go('editor')}
+function edit(id){go('editor',()=>{editing=id;let c=get(id);form=c?{...c,members:[...c.members]}:{id:Date.now(),name:'',members:[],visible:true,discover:false,hue:circles.length};editorInitial={name:form.name,members:[...form.members]}})}
 function saveCircle(){let name=document.getElementById('circleName').value.trim();if(!name){errors={name:'Enter a circle name'};render();document.getElementById('circleName').focus();return}form.name=name;let index=circles.findIndex(c=>c.id===form.id);if(index<0)circles.push({...form});else circles[index]={...form};flash('Circle “'+name+'” '+(index<0?'created':'updated')+'. '+plural(form.members.length)+' saved.','circles')}
 function saveSettings(){let c=get(editing);c.visible=document.getElementById('visible').checked;c.discover=document.getElementById('discover').checked;flash('Privacy settings saved for '+c.name+'. Sharing is '+(c.visible?'on':'paused')+' and profile suggestions are '+(c.discover?'on':'off')+'.','circles')}
-function showPost(id){selectedPost=id;go('post')}
-function settings(id){editing=id;go('settings')}
-function startCompose(){composer={text:'',audience:[]};go('compose')}
-function openCompose(){if(page==='published')composer={text:'',audience:[]};go('compose')}
+function showPost(id){go('post',()=>{selectedPost=id})}
+function settings(id){go('settings',()=>{editing=id})}
+function startCompose(){go('compose',()=>{composer={text:'',audience:[]}})}
+function openCompose(){go('compose',()=>{if(page==='published')composer={text:'',audience:[]}})}
 function eligible(id){const c=get(id);return c&&c.visible&&c.members.length}
 function pruneAudience(){const dropped=composer.audience.filter(id=>!eligible(id));composer.audience=composer.audience.filter(eligible);return dropped}
 let droppedNote=[];
