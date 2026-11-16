@@ -276,11 +276,28 @@ function showPost(id){go('post',()=>{selectedPost=id})}
 function settings(id){go('settings',()=>{editing=id})}
 function startCompose(){go('compose',()=>{composer={text:'',audience:[]}})}
 function openCompose(){go('compose',()=>{if(page==='published')composer={text:'',audience:[]}})}
-function eligible(id){const c=get(id);return c&&c.visible&&c.members.length}
+function eligible(id){const c=get(id);return !!c&&c.visible===true&&c.members.length>0}
 function pruneAudience(){const dropped=composer.audience.filter(id=>!eligible(id));composer.audience=composer.audience.filter(eligible);return dropped}
 let droppedNote=[];
-function preview(){droppedNote=pruneAudience();composer.text=document.getElementById('postText').value.trim();errors={};if(!composer.text)errors.text='Write something to share';if(!composer.audience.length)errors.audience='Choose at least one circle';else if(!count(composer.audience))errors.audience='These circles have no members yet';if(Object.keys(errors).length||droppedNote.length){render();document.getElementById(errors.text?'postText':'audience-first')?.focus();return}go('preview')}
-function publish(){lastPost={text:composer.text,audience:[...composer.audience]};posts.push({id:Date.now(),...lastPost,date:'Just now'});composer={text:'',audience:[]};go('published')}
+function validatePost(){
+  droppedNote=pruneAudience();errors={};
+  if(!composer.text.trim())errors.text='Write something to share';
+  if(!composer.audience.length)errors.audience='Choose at least one circle';
+  else if(!count(composer.audience))errors.audience='These circles have no members yet';
+  return !Object.keys(errors).length&&!droppedNote.length;
+}
+function preview(){composer.text=document.getElementById('postText').value.trim();if(!validatePost()){render();document.getElementById(errors.text?'postText':'audience-first')?.focus();return}go('preview')}
+function publish(){
+  if(page!=='preview')return;
+  // Recheck current circle data; removing any selection requires another preview.
+  if(!validatePost()){
+    errors.publish='Post not published. Check the issues below, then preview your audience again.';
+    page='compose';notice='';focusHeading=true;render();
+    document.getElementById(errors.text?'postText':'audience-first')?.focus();
+    return;
+  }
+  lastPost={text:composer.text,audience:[...composer.audience]};posts.push({id:Date.now(),...lastPost,date:'Just now'});composer={text:'',audience:[]};go('published');
+}
 
 function render(){
   const activeId=document.activeElement?.id;
@@ -335,14 +352,15 @@ function render(){
   }
   if(page==='compose'){
     const dropped=[...droppedNote,...pruneAudience()];droppedNote=[];
-    if(dropped.length)s+=`<div class="note" role="status">${icon('info',18)}<span>${esc(names(dropped))} ${dropped.length===1?'was':'were'} removed from this post because ${dropped.length===1?'it can’t':'they can’t'} be shared with right now.</span></div>`;
-    const firstPick=circles.find(c=>c.visible&&c.members.length);
+    if(errors.publish)s+=`<div class="note" role="alert">${icon('alert',18)}<span>${esc(errors.publish)}</span></div>`;
+    if(dropped.length)s+=`<div class="note" role="status">${icon('info',18)}<span>${dropped.map(id=>esc(get(id)?.name||'A deleted circle')).join(', ')} ${dropped.length===1?'was':'were'} removed from this post. Removed circles no longer exist, have sharing paused, or have no members.</span></div>`;
+    const firstPick=circles.find(c=>eligible(c.id));
     s+=h2('Create a post')+`<div class="card">
       <label class="field" for="postText">Your post</label>
       <textarea id="postText" rows="4" placeholder="What would you like to share?" oninput="clearTextError(this)" ${errors.text?'aria-invalid="true" aria-describedby="text-error"':''}>${esc(composer.text)}</textarea>
       ${errors.text?fieldError('text-error',errors.text):''}
       <h3 id="aud-label">Choose audience circles</h3>
-      <div class="picks" role="group" aria-labelledby="aud-label" ${errors.audience?'aria-describedby="audience-error"':''}>${circles.map(c=>{const off=!c.visible||!c.members.length;return `<div class="pick ${off?'disabled':''}"><input type="checkbox" id="${c===firstPick?'audience-first':'a'+c.id}" ${composer.audience.includes(c.id)?'checked':''} ${off?'disabled':''} onchange="toggleAudience(${c.id})">${ring(c,22)}<label class="grow" for="${c===firstPick?'audience-first':'a'+c.id}"><span class="name">${esc(c.name)}</span><span class="sub">${!c.visible?'Sharing paused':!c.members.length?'No members yet':c.members.length+' '+peopleWord(c.members.length)}</span></label>${!c.visible?`<button type="button" class="linkish" onclick="settings(${c.id})" aria-label="Change sharing for ${esc(c.name)}">Change</button>`:''}</div>`}).join('')}</div>
+      <div class="picks" role="group" aria-labelledby="aud-label" ${errors.audience?'aria-describedby="audience-error"':''}>${circles.map(c=>{const off=!eligible(c.id);return `<div class="pick ${off?'disabled':''}"><input type="checkbox" id="${c===firstPick?'audience-first':'a'+c.id}" ${composer.audience.includes(c.id)?'checked':''} ${off?'disabled':''} onchange="toggleAudience(${c.id})">${ring(c,22)}<label class="grow" for="${c===firstPick?'audience-first':'a'+c.id}"><span class="name">${esc(c.name)}</span><span class="sub">${!c.visible?'Sharing paused':!c.members.length?'No members yet':c.members.length+' '+peopleWord(c.members.length)}</span></label>${!c.visible?`<button type="button" class="linkish" onclick="settings(${c.id})" aria-label="Change sharing for ${esc(c.name)}">Change</button>`:''}</div>`}).join('')}</div>
       ${errors.audience?fieldError('audience-error',errors.audience):''}
       <div class="note summary" id="summary" aria-live="polite">${summaryHTML()}</div>
       <button class="btn block" onclick="preview()">Preview audience</button></div>`;
